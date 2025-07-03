@@ -13,6 +13,7 @@ SECP256K1_BUILD_OPTS="--enable-module-recovery"
 
 # Initialize external vars - need this to get around unbound variable errors
 SKIP_GRADLE="$SKIP_GRADLE"
+echo "SKIP_GRADLE: $SKIP_GRADLE"
 
 # Exit script if you try to use an uninitialized variable.
 set -o nounset
@@ -27,12 +28,15 @@ set -o pipefail
 # hoops for this because the usual one-liners for this don't work if the script
 # is a symlink
 SOURCE="${BASH_SOURCE[0]}"
+echo "SOURCE: $SOURCE"
+
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
   SOURCE="$(readlink "$SOURCE")"
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+echo "SCRIPTDIR: $SCRIPTDIR"
 
 # Determine core count for parallel make
 if [[ "$OSTYPE" == "linux-gnu" ]];  then
@@ -51,6 +55,8 @@ if [[ "$OSTYPE" == "darwin"* ]];  then
   fi
   OSARCH="darwin-$arch_name"
 fi
+echo "OSARCH: $OSARCH"
+
 
 # add to path cargo
 [ -f $HOME/.cargo/env ] && . $HOME/.cargo/env
@@ -300,7 +306,7 @@ build_constantine() {
   echo "#############################"
   echo "####### build constantine ####"
   echo "#############################"
-  
+
   # don't try to build constantine on riscv64
   if [[ "$OSARCH" == "linux-gnu-riscv64" ]];  then
     return
@@ -389,8 +395,8 @@ build_arithmetic
 build_ipa_multipoint
 build_secp256r1
 build_gnark
-build_constantine
-build_boringssl
+#build_constantine
+#build_boringssl
 
 build_jars
 exit
