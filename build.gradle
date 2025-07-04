@@ -16,8 +16,8 @@
 allprojects {
   apply plugin: 'java-library'
 
-  sourceCompatibility = 21
-  targetCompatibility = 21
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
 
   repositories {
     mavenCentral()

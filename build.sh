@@ -398,5 +398,5 @@ build_gnark
 #build_constantine
 #build_boringssl
 
-#build_jars
+build_jars
 exit
