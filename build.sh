@@ -292,6 +292,7 @@ EOF
     export PATH=$GOROOT/bin:$PATH
   fi
 
+  go env -w CGO_ENABLED=1
   go build -buildmode=c-shared -o libgnark_jni.$LIBRARY_EXTENSION gnark-jni.go
   go build -buildmode=c-shared -o libgnark_eip_2537.$LIBRARY_EXTENSION gnark-eip-2537.go
   go build -buildmode=c-shared -o libgnark_eip_196.$LIBRARY_EXTENSION gnark-eip-196.go
