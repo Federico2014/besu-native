@@ -391,7 +391,7 @@ EOF
 
 
 #build_blake2bf
-#build_secp256k1
+build_secp256k1
 #build_arithmetic
 #build_ipa_multipoint
 #build_secp256r1

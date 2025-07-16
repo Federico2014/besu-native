@@ -1,6 +1,4 @@
-package org.hyperledger.besu.nativelib.gnark.utils;
-
-import java.util.Arrays;
+package org.hyperledger.besu.nativelib.common.utils;
 
 public class ByteArray {
 

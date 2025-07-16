@@ -22,6 +22,10 @@ plugins {
 dependencies {
   implementation project(':common')
   implementation 'net.java.dev.jna:jna:5.12.1'
+
+  testImplementation 'com.google.guava:guava:31.1-jre'
+  testImplementation 'junit:junit:4.13.2'
+  testImplementation 'org.assertj:assertj-core:3.22.0'
 }
 
 task macArmLibCopy(type: Copy) {

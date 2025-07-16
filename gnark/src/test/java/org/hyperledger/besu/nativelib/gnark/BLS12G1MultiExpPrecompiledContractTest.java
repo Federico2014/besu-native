@@ -15,8 +15,6 @@
  */
 package org.hyperledger.besu.nativelib.gnark;
 
-//
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,8 +24,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.io.CharStreams;
 import com.sun.jna.ptr.IntByReference;
-//import org.apache.tuweni.bytes.Bytes;
-import org.hyperledger.besu.nativelib.gnark.utils.ByteArray;
+import org.hyperledger.besu.nativelib.common.utils.ByteArray;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,7 +58,6 @@ public class BLS12G1MultiExpPrecompiledContractTest {
       // skip the header row
       return;
     }
-//    final byte[] input = Bytes.fromHexString(this.input).toArrayUnsafe();
     byte[] input = ByteArray.hexStringToBytes(this.input);
 
     final byte[] output = new byte[LibGnarkEIP2537.EIP2537_PREALLOCATE_FOR_RESULT_BYTES];
@@ -75,16 +71,12 @@ public class BLS12G1MultiExpPrecompiledContractTest {
     LibGnarkEIP2537.eip2537_perform_operation(LibGnarkEIP2537.BLS12_G1MULTIEXP_OPERATION_SHIM_VALUE,
         input, input.length, output, outputLength, error, errorLength);
 
-//    final Bytes expectedComputation =
-//        expectedResult == null ? null : Bytes.fromHexString(expectedResult);
     final byte[] expectedComputation =
         expectedResult == null ? null : ByteArray.hexStringToBytes(expectedResult);
     if (errorLength.getValue() > 0) {
       assertThat(new String(error, 0, errorLength.getValue(), UTF_8)).isEqualTo(notes);
       assertThat(outputLength.getValue()).isZero();
     } else {
-//      final Bytes actualComputation = Bytes.wrap(output, 0, outputLength.getValue());
-//      assertThat(actualComputation).isEqualTo(expectedComputation);
       byte[] result = ByteArray.subArray(output, 0, outputLength.getValue());
       Assert.assertArrayEquals(expectedComputation, result);
       assertThat(notes).isEmpty();

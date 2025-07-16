@@ -17,9 +17,7 @@ package org.hyperledger.besu.nativelib.gnark;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sun.jna.ptr.IntByReference;
-//import org.apache.tuweni.bytes.Bytes;
-import org.hyperledger.besu.nativelib.gnark.utils.ByteArray;
-import org.junit.Ignore;
+import org.hyperledger.besu.nativelib.common.utils.ByteArray;
 import org.junit.Test;
 
 public class AltBN128PairingPrecompiledContractLegacyTest {
