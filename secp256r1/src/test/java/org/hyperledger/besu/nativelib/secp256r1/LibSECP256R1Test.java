@@ -15,9 +15,8 @@
 
 package org.hyperledger.besu.nativelib.secp256r1;
 
-import org.apache.tuweni.bytes.Bytes;
-import org.apache.tuweni.units.bigints.UInt256;
 import org.assertj.core.util.Hexadecimals;
+import org.hyperledger.besu.nativelib.common.utils.ByteArray;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,13 +30,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class LibSECP256R1Test {
     final private LibSECP256R1 libSecp256r1 = new LibSECP256R1();
 
-    final private Bytes data = Bytes.fromHexString("c35e2f092553c55772926bdbe87c9796827d17024dbb9233a545366e2e5987dd344deb72df987144b8c6c43bc41b654b94cc856e16b96d7a821c8ec039b503e3d86728c494a967d83011a0e090b5d54cd47f4e366c0912bc808fbb2ea96efac88fb3ebec9342738e225f7c7c2b011ce375b56621a20642b4d36e060db4524af1");
-    final private Bytes privateKey = Bytes.fromHexString("0f56db78ca460b055c500064824bed999a25aaf48ebb519ac201537b85479813");
-    final private Bytes publicKey = Bytes.fromHexString("e266ddfdc12668db30d4ca3e8f7749432c416044f2d2b8c10bf3d4012aeffa8abfa86404a2e9ffe67d47c587ef7a97a7f456b863b4d02cfc6928973ab5b1cb39");
-    final private Bytes invalidPublicKey = Bytes.fromHexString("f266ddfdc12668db30d4ca3e8f7749432c416044f2d2b8c10bf3d4012aeffa8abfa86404a2e9ffe67d47c587ef7a97a7f456b863b4d02cfc6928973ab5b1cb39");
-    final private Bytes signatureR = Bytes.fromHexString("976d3a4e9d23326dc0baa9fa560b7c4e53f42864f508483a6473b6a11079b2db");
-    final private Bytes invalidSignatureR = Bytes.fromHexString("a76d3a4e9d23326dc0baa9fa560b7c4e53f42864f508483a6473b6a11079b2db");
-    final private Bytes signatureS = Bytes.fromHexString("1b766e9ceb71ba6c01dcd46e0af462cd4cfa652ae5017d4555b8eeefe36e1932");
+    final private byte[] data = ByteArray.hexStringToBytes("c35e2f092553c55772926bdbe87c9796827d17024dbb9233a545366e2e5987dd344deb72df987144b8c6c43bc41b654b94cc856e16b96d7a821c8ec039b503e3d86728c494a967d83011a0e090b5d54cd47f4e366c0912bc808fbb2ea96efac88fb3ebec9342738e225f7c7c2b011ce375b56621a20642b4d36e060db4524af1");
+    final private byte[] privateKey = ByteArray.hexStringToBytes("0f56db78ca460b055c500064824bed999a25aaf48ebb519ac201537b85479813");
+    final private byte[] publicKey = ByteArray.hexStringToBytes("e266ddfdc12668db30d4ca3e8f7749432c416044f2d2b8c10bf3d4012aeffa8abfa86404a2e9ffe67d47c587ef7a97a7f456b863b4d02cfc6928973ab5b1cb39");
+    final private byte[] invalidPublicKey = ByteArray.hexStringToBytes("f266ddfdc12668db30d4ca3e8f7749432c416044f2d2b8c10bf3d4012aeffa8abfa86404a2e9ffe67d47c587ef7a97a7f456b863b4d02cfc6928973ab5b1cb39");
+    final private byte[] signatureR = ByteArray.hexStringToBytes("976d3a4e9d23326dc0baa9fa560b7c4e53f42864f508483a6473b6a11079b2db");
+    final private byte[] invalidSignatureR = ByteArray.hexStringToBytes("a76d3a4e9d23326dc0baa9fa560b7c4e53f42864f508483a6473b6a11079b2db");
+    final private byte[] signatureS = ByteArray.hexStringToBytes("1b766e9ceb71ba6c01dcd46e0af462cd4cfa652ae5017d4555b8eeefe36e1932");
     final int signatureV = 0;
 
     private byte[] dataHash;
@@ -45,16 +44,16 @@ public class LibSECP256R1Test {
     @Before
     public void setUp() throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        dataHash = digest.digest(data.toArrayUnsafe());
+        dataHash = digest.digest(data);
     }
 
     @Test
     public void verify_should_return_true_if_signature_is_valid() {
         boolean verified = libSecp256r1.verify(
                 dataHash,
-                signatureR.toArrayUnsafe(),
-                signatureS.toArrayUnsafe(),
-                publicKey.toArrayUnsafe()
+                signatureR,
+                signatureS,
+                publicKey
         );
 
 
@@ -63,15 +62,14 @@ public class LibSECP256R1Test {
 
     @Test
     public void verify_malleated_signature() {
-        var order = UInt256.fromHexString(
-            "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
-        var malleatedSignatureS = order.subtract(UInt256.fromBytes(signatureS));
+        BigInteger order = new BigInteger("FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551", 16);
+        BigInteger malleatedSignatureS = order.subtract(new BigInteger(1, signatureS));
 
         boolean verified = libSecp256r1.verify(
             dataHash,
-            signatureR.toArrayUnsafe(),
-            malleatedSignatureS.toArrayUnsafe(),
-            publicKey.toArrayUnsafe(),
+            signatureR,
+            malleatedSignatureS.toByteArray(),
+            publicKey,
             true
         );
 
@@ -81,9 +79,9 @@ public class LibSECP256R1Test {
         assertThatThrownBy(() ->
             libSecp256r1.verify(
                 dataHash,
-                signatureR.toArrayUnsafe(),
-                malleatedSignatureS.toArrayUnsafe(),
-                publicKey.toArrayUnsafe(),
+                signatureR,
+                malleatedSignatureS.toByteArray(),
+                publicKey,
                 false
             )
         ).isInstanceOf(IllegalArgumentException.class)
@@ -94,9 +92,9 @@ public class LibSECP256R1Test {
     public void verify_should_return_false_if_signature_is_invalid() {
         boolean verified = libSecp256r1.verify(
                 dataHash,
-                invalidSignatureR.toArrayUnsafe(),
-                signatureS.toArrayUnsafe(),
-                publicKey.toArrayUnsafe()
+                invalidSignatureR,
+                signatureS,
+                publicKey
         );
 
 
@@ -107,9 +105,9 @@ public class LibSECP256R1Test {
     public void verify_should_throw_exception_if_any_other_parameter_is_invalid() {
         libSecp256r1.verify(
                 dataHash,
-                signatureR.toArrayUnsafe(),
-                signatureS.toArrayUnsafe(),
-                invalidPublicKey.toArrayUnsafe()
+                signatureR,
+                signatureS,
+                invalidPublicKey
         );
     }
 
@@ -117,12 +115,12 @@ public class LibSECP256R1Test {
     public void keyRecovery_should_return_expected_public_key() {
         byte[] actualPublicKey = libSecp256r1.keyRecovery(
             dataHash,
-            signatureR.toArrayUnsafe(),
-            signatureS.toArrayUnsafe(),
+            signatureR,
+            signatureS,
             signatureV
         );
 
-        assertThat(actualPublicKey).isEqualTo(publicKey.toArrayUnsafe());
+        assertThat(actualPublicKey).isEqualTo(publicKey);
 
     }
 
@@ -131,11 +129,11 @@ public class LibSECP256R1Test {
         final BigInteger r = new BigInteger("607232317131644998607993399928086035368869502933999419429470745918733484");
         final BigInteger s = new BigInteger("909326537358980219114547956988636184748037502936154044628658501523731230682");
         final byte v = (byte) 1;
-        final Bytes dataHash = Bytes.fromHexString("0x5d2a686cbe81873192db62f069cc1f0c10a1580c89d19c21407dcd1cde48ad06");
+        final byte[] dataHash = ByteArray.hexStringToBytes("0x5d2a686cbe81873192db62f069cc1f0c10a1580c89d19c21407dcd1cde48ad06");
 
 
         byte[] actualPublicKey = libSecp256r1.keyRecovery(
-                dataHash.toArrayUnsafe(),
+                dataHash,
                 r.toByteArray(),
                 s.toByteArray(),
                 v
@@ -148,8 +146,8 @@ public class LibSECP256R1Test {
     public void keyRecovery_should_throw_exception_if_parameter_is_invalid() {
         libSecp256r1.keyRecovery(
                 dataHash,
-                signatureR.toArrayUnsafe(),
-                signatureS.toArrayUnsafe(),
+                signatureR,
+                signatureS,
                 2
         );
     }
@@ -158,15 +156,15 @@ public class LibSECP256R1Test {
     public void sign_should_return_the_expected_signature() {
         Signature signature = libSecp256r1.sign(
                 dataHash,
-                privateKey.toArrayUnsafe(),
-                publicKey.toArrayUnsafe()
+                privateKey,
+                publicKey
         );
 
         boolean verificationResult = libSecp256r1.verify(
                 dataHash,
                 signature.getR(),
                 signature.getS(),
-                publicKey.toArrayUnsafe()
+                publicKey
         );
 
         assertThat(verificationResult).isTrue();
@@ -178,15 +176,15 @@ public class LibSECP256R1Test {
                 signature.getV()
         );
 
-        assertThat(recoveredPublicKey).isEqualTo(publicKey.toArrayUnsafe());
+        assertThat(recoveredPublicKey).isEqualTo(publicKey);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void sign_should_throw_exception_if_parameter_is_invalid() {
         libSecp256r1.sign(
                 dataHash,
-                privateKey.toArrayUnsafe(),
-                invalidPublicKey.toArrayUnsafe()
+                privateKey,
+                invalidPublicKey
         );
     }
 }

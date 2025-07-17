@@ -3,7 +3,8 @@ package org.hyperledger.besu.nativelib.arithmetic;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sun.jna.ptr.IntByReference;
-import org.apache.tuweni.bytes.Bytes;
+import org.hyperledger.besu.nativelib.common.utils.ByteArray;
+import org.junit.Assert;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -101,15 +102,14 @@ public class TestLibArithmetic {
   @MethodSource("modExpParameters")
   @ParameterizedTest
   void testModExp(String inputString, String outputString) {
-    Bytes input = Bytes.fromHexString(inputString);
-    Bytes output = Bytes.fromHexString(outputString);
+    byte[] input = ByteArray.hexStringToBytes(inputString);
+    byte[] output = ByteArray.hexStringToBytes(outputString);
 
-    byte[] resultArray = new byte[output.size() * 2];
+    byte[] resultArray = new byte[output.length * 2];
     IntByReference resultSize = new IntByReference(resultArray.length);
-    LibArithmetic.modexp_precompiled(input.toArrayUnsafe(), input.size(), resultArray, resultSize);
+    LibArithmetic.modexp_precompiled(input, input.length, resultArray, resultSize);
+    byte[] result = ByteArray.subArray(resultArray, 0, resultSize.getValue());
 
-    Bytes result = Bytes.wrap(resultArray, 0, resultSize.getValue());
-
-    assertThat(result).isEqualTo(output);
+    Assert.assertArrayEquals(output, result);
   }
 }
