@@ -95,4 +95,45 @@ public class LibSECP256K1Test {
 
     Assert.assertArrayEquals(publicKey, recoveredKey.array());
   }
+
+  @Test
+  public void testPubkey() {
+    byte[] privateKey;
+    int ret;
+    final LibSecp256k1.secp256k1_pubkey pubKey = new LibSecp256k1.secp256k1_pubkey();
+    privateKey = new byte[0];
+    ret = LibSecp256k1.secp256k1_ec_pubkey_create(LibSecp256k1.CONTEXT, pubKey, privateKey);
+    Assert.assertEquals(0, ret);
+
+    privateKey = new byte[32];
+    privateKey[31] = 1;
+    ret = LibSecp256k1.secp256k1_ec_pubkey_create(LibSecp256k1.CONTEXT, pubKey, privateKey);
+    Assert.assertEquals(1, ret);
+
+    final ByteBuffer recoveredKey = ByteBuffer.allocate(65);
+    final LongByReference keySize = new LongByReference(recoveredKey.limit());
+    if (LibSecp256k1.secp256k1_ec_pubkey_serialize(
+        LibSecp256k1.CONTEXT,
+        recoveredKey,
+        keySize,
+        pubKey,
+        SECP256K1_EC_UNCOMPRESSED
+    ) == 0) {
+      throw new RuntimeException("Could not serialize public key.");
+    }
+    System.out.println("Public key: " + ByteArray.toHex(recoveredKey.array()));
+
+    // test for N
+    privateKey = ByteArray.hexStringToBytes(
+        "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141");
+    ret = LibSecp256k1.secp256k1_ec_pubkey_create(LibSecp256k1.CONTEXT, pubKey, privateKey);
+    Assert.assertEquals(0, ret);
+
+    // test for N-1
+    privateKey = ByteArray.hexStringToBytes(
+        "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140");
+    ret = LibSecp256k1.secp256k1_ec_pubkey_create(LibSecp256k1.CONTEXT, pubKey, privateKey);
+    Assert.assertEquals(1, ret);
+  }
+
 }

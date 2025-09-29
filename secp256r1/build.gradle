@@ -16,7 +16,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'com.jfrog.artifactory' version '5.2.3'
+//    id 'com.jfrog.artifactory' version '5.2.3'
 }
 
 dependencies {
@@ -28,47 +28,47 @@ dependencies {
 }
 
 // Ensure that the compileTestJava task depends on the macArmLibCopy task
-tasks.named('compileTestJava').configure {
-    dependsOn tasks.named('macArmLibCopy')
-    dependsOn tasks.named('macLibCopy')
-    dependsOn tasks.named('linuxLibCopy')
-    dependsOn tasks.named('linuxArm64LibCopy')
-}
-
-task macArmLibCopy(type: Copy) {
-    from 'besu-native-ec/release/darwin-aarch64/libbesu_native_ec.dylib'
-    from 'besu-native-ec/release/darwin-aarch64/libbesu_native_ec_crypto.dylib'
-    into 'build/resources/main/lib/aarch64'
-}
-processResources.dependsOn macArmLibCopy
-
-task macLibCopy(type: Copy) {
-    from 'besu-native-ec/release/darwin-x86-64/libbesu_native_ec.dylib'
-    from 'besu-native-ec/release/darwin-x86-64/libbesu_native_ec_crypto.dylib'
-    into 'build/resources/main/lib/x86-64'
-}
-processResources.dependsOn macLibCopy
-
-task linuxLibCopy(type: Copy) {
-    from 'besu-native-ec/release/linux-gnu-x86_64/libbesu_native_ec.so'
-    from 'besu-native-ec/release/linux-gnu-x86_64/libbesu_native_ec_crypto.so'
-    into 'build/resources/main/lib/x86-64'
-}
-processResources.dependsOn linuxLibCopy
-
-task linuxArm64LibCopy(type: Copy) {
-    from 'besu-native-ec/release/linux-gnu-aarch64/libbesu_native_ec.so'
-    from 'besu-native-ec/release/linux-gnu-aarch64/libbesu_native_ec_crypto.so'
-    into 'build/resources/main/lib/aarch64'
-}
-processResources.dependsOn linuxArm64LibCopy
-
-task linuxRiscv64LibCopy(type: Copy) {
-    from 'besu-native-ec/release/linux-gnu-riscv64/libbesu_native_ec.so'
-    from 'besu-native-ec/release/linux-gnu-riscv64/libbesu_native_ec_crypto.so'
-    into 'build/resources/main/lib/riscv64'
-}
-processResources.dependsOn linuxRiscv64LibCopy
+//tasks.named('compileTestJava').configure {
+//    dependsOn tasks.named('macArmLibCopy')
+//    dependsOn tasks.named('macLibCopy')
+//    dependsOn tasks.named('linuxLibCopy')
+//    dependsOn tasks.named('linuxArm64LibCopy')
+//}
+//
+//task macArmLibCopy(type: Copy) {
+//    from 'besu-native-ec/release/darwin-aarch64/libbesu_native_ec.dylib'
+//    from 'besu-native-ec/release/darwin-aarch64/libbesu_native_ec_crypto.dylib'
+//    into 'build/resources/main/lib/aarch64'
+//}
+//processResources.dependsOn macArmLibCopy
+//
+//task macLibCopy(type: Copy) {
+//    from 'besu-native-ec/release/darwin-x86-64/libbesu_native_ec.dylib'
+//    from 'besu-native-ec/release/darwin-x86-64/libbesu_native_ec_crypto.dylib'
+//    into 'build/resources/main/lib/x86-64'
+//}
+//processResources.dependsOn macLibCopy
+//
+//task linuxLibCopy(type: Copy) {
+//    from 'besu-native-ec/release/linux-gnu-x86_64/libbesu_native_ec.so'
+//    from 'besu-native-ec/release/linux-gnu-x86_64/libbesu_native_ec_crypto.so'
+//    into 'build/resources/main/lib/x86-64'
+//}
+//processResources.dependsOn linuxLibCopy
+//
+//task linuxArm64LibCopy(type: Copy) {
+//    from 'besu-native-ec/release/linux-gnu-aarch64/libbesu_native_ec.so'
+//    from 'besu-native-ec/release/linux-gnu-aarch64/libbesu_native_ec_crypto.so'
+//    into 'build/resources/main/lib/aarch64'
+//}
+//processResources.dependsOn linuxArm64LibCopy
+//
+//task linuxRiscv64LibCopy(type: Copy) {
+//    from 'besu-native-ec/release/linux-gnu-riscv64/libbesu_native_ec.so'
+//    from 'besu-native-ec/release/linux-gnu-riscv64/libbesu_native_ec_crypto.so'
+//    into 'build/resources/main/lib/riscv64'
+//}
+//processResources.dependsOn linuxRiscv64LibCopy
 
 jar {
     archiveBaseName = 'besu-native-secp256r1'
@@ -127,26 +127,26 @@ publishing {
     }
 }
 
-def artifactoryUser = project.hasProperty('artifactoryUser') ? project.property('artifactoryUser') : System.getenv('ARTIFACTORY_USER')
-def artifactoryKey = project.hasProperty('artifactoryApiKey') ? project.property('artifactoryApiKey') : System.getenv('ARTIFACTORY_KEY')
-def artifactoryRepo = System.getenv('ARTIFACTORY_REPO') ?: 'besu-maven'
-def artifactoryOrg = System.getenv('ARTIFACTORY_ORG') ?: 'hyperledger'
-
-artifactory {
-    contextUrl = "https://hyperledger.jfrog.io/${artifactoryOrg}"
-    publish {
-        repository {
-            repoKey = artifactoryRepo
-            username = artifactoryUser
-            password = artifactoryKey
-        }
-        defaults {
-            publications('mavenJava')
-            publishArtifacts = true
-            publishPom = true
-        }
-    }
-}
+//def artifactoryUser = project.hasProperty('artifactoryUser') ? project.property('artifactoryUser') : System.getenv('ARTIFACTORY_USER')
+//def artifactoryKey = project.hasProperty('artifactoryApiKey') ? project.property('artifactoryApiKey') : System.getenv('ARTIFACTORY_KEY')
+//def artifactoryRepo = System.getenv('ARTIFACTORY_REPO') ?: 'besu-maven'
+//def artifactoryOrg = System.getenv('ARTIFACTORY_ORG') ?: 'hyperledger'
+//
+//artifactory {
+//    contextUrl = "https://hyperledger.jfrog.io/${artifactoryOrg}"
+//    publish {
+//        repository {
+//            repoKey = artifactoryRepo
+//            username = artifactoryUser
+//            password = artifactoryKey
+//        }
+//        defaults {
+//            publications('mavenJava')
+//            publishArtifacts = true
+//            publishPom = true
+//        }
+//    }
+//}
 
 test {
     systemProperty "jna.library.path", "$project.projectDir/besu-native-ec/release"
