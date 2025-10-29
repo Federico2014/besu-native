@@ -152,6 +152,21 @@ public class LibSecp256k1 implements Library {
    */
   public static native PointerByReference secp256k1_context_create(final int flags);
 
+  /** Destroy a secp256k1 context object (created in dynamically allocated memory).
+   *
+   *  <p>The context pointer may not be used afterwards.
+   *
+   *  <p>The context to destroy must have been created using secp256k1_context_create
+   *  or secp256k1_context_clone. If the context has instead been created using
+   *  secp256k1_context_preallocated_create or secp256k1_context_preallocated_clone, the
+   *  behaviour is undefined. In that case, secp256k1_context_preallocated_destroy must
+   *  be used instead.
+   *
+   *  @param ctx: pointer to a context to destroy, constructed using
+   *      secp256k1_context_create or secp256k1_context_clone(i.e., not secp256k1_context_static).
+   */
+  public static native void secp256k1_context_destroy(PointerByReference ctx);
+
   /**
    * Parse a variable-length public key into the pubkey object.
    *

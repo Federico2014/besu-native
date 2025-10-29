@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.hyperledger.besu.nativelib.common.utils.ByteArray;
 import org.hyperledger.besu.nativelib.secp256k1.LibSecp256k1.secp256k1_ecdsa_recoverable_signature;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -52,6 +53,11 @@ public class LibSECP256K1Test {
 
     MessageDigest digest = MessageDigest.getInstance("SHA-256");
     dataHash = digest.digest(data);
+  }
+
+  @AfterClass
+  public static void destroy() {
+    LibSecp256k1.secp256k1_context_destroy(LibSecp256k1.CONTEXT);
   }
 
   @Test
