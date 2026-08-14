@@ -87,7 +87,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 publishing {
   publications {
     mavenJava(MavenPublication) {
-      groupId "org.hyperledger.besu"
+      groupId rootProject.ext.publicationGroup('org.hyperledger.besu')
       artifactId 'secp256k1'
       version "${project.version}"
 
@@ -98,7 +98,7 @@ publishing {
       pom {
         name = "Besu Native - ${project.name}"
         description = 'Adapter for native secp256k1 library'
-        url = 'http://github.com/hyperledger/besu-native'
+        url = rootProject.ext.pomProjectUrl
         licenses {
           license {
             name = 'The Apache License, Version 2.0'
@@ -106,9 +106,9 @@ publishing {
           }
         }
         scm {
-          connection = 'scm:git:git://github.com/hyperledger/besu-native.git'
-          developerConnection = 'scm:git:ssh://github.com/hyperledger/besu-native.git'
-          url = 'https://github.com/hyperledger/besu-native'
+          connection = rootProject.ext.pomScmConnection
+          developerConnection = rootProject.ext.pomScmDeveloperConnection
+          url = rootProject.ext.pomProjectUrl
         }
       }
     }
