@@ -13,8 +13,32 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import org.gradle.api.publish.maven.MavenPublication
+
+def configuredVersion = version.toString()
+def jitPackBuild = System.getenv('JITPACK') == 'true'
+def jitPackGroup = [System.getenv('GROUP'), System.getenv('ARTIFACT')]
+    .findAll { it != null && !it.trim().isEmpty() }
+    .join('.')
+
+ext.isJitPackBuild = jitPackBuild
+ext.publicationVersion = jitPackBuild && System.getenv('VERSION')
+    ? System.getenv('VERSION')
+    : (System.getenv('MAVEN_RELEASE_VERSION') ?: configuredVersion)
+ext.publicationGroup = { String defaultGroup ->
+  if (jitPackBuild && jitPackGroup) {
+    return jitPackGroup
+  }
+  return System.getenv('MAVEN_CENTRAL_NAMESPACE') ?: defaultGroup
+}
+ext.pomProjectUrl = 'https://github.com/Federico2014/besu-native'
+ext.pomScmConnection = 'scm:git:https://github.com/Federico2014/besu-native.git'
+ext.pomScmDeveloperConnection = 'scm:git:ssh://git@github.com/Federico2014/besu-native.git'
+
 allprojects {
   apply plugin: 'java-library'
+
+  version = rootProject.ext.publicationVersion
 
   sourceCompatibility = JavaVersion.VERSION_1_8
   targetCompatibility = JavaVersion.VERSION_1_8
@@ -25,4 +49,101 @@ allprojects {
       url "https://artifacts.consensys.net/public/maven/maven/"
     }
   }
+}
+
+def centralRepositoryDir = layout.buildDirectory.dir('central-staging')
+def centralSigningKey = System.getenv('MAVEN_SIGNING_KEY')
+def centralSigningPassword = System.getenv('MAVEN_SIGNING_PASSWORD') ?: ''
+
+subprojects {
+  pluginManager.withPlugin('maven-publish') {
+    apply plugin: 'signing'
+
+    publishing {
+      repositories {
+        maven {
+          name = 'centralStaging'
+          url = centralRepositoryDir
+        }
+      }
+
+      publications.withType(MavenPublication).configureEach {
+        pom {
+          developers {
+            developer {
+              id = 'Federico2014'
+              name = 'Federico2014'
+              url = 'https://github.com/Federico2014'
+            }
+          }
+        }
+      }
+    }
+
+    if (centralSigningKey) {
+      signing {
+        useInMemoryPgpKeys(centralSigningKey, centralSigningPassword)
+        sign publishing.publications
+      }
+    }
+  }
+}
+
+tasks.register('cleanCentralStaging', Delete) {
+  delete centralRepositoryDir
+}
+
+tasks.register('validateCentralPublication') {
+  doLast {
+    if (!System.getenv('MAVEN_CENTRAL_NAMESPACE')) {
+      throw new GradleException('MAVEN_CENTRAL_NAMESPACE must contain a verified Central namespace.')
+    }
+    if (version.toString().endsWith('-SNAPSHOT')) {
+      throw new GradleException('Maven Central only accepts release versions, not -SNAPSHOT versions.')
+    }
+    if (!centralSigningKey) {
+      throw new GradleException('MAVEN_SIGNING_KEY is required to sign Maven Central artifacts.')
+    }
+  }
+}
+
+gradle.projectsEvaluated {
+  subprojects.each { subproject ->
+    subproject.tasks.matching {
+      it.name == 'publishMavenJavaPublicationToCentralStagingRepository'
+    }.configureEach {
+      dependsOn rootProject.tasks.named('cleanCentralStaging')
+      dependsOn rootProject.tasks.named('validateCentralPublication')
+    }
+  }
+}
+
+tasks.register('verifyCentralStaging') {
+  dependsOn subprojects.collect {
+    "${it.path}:publishMavenJavaPublicationToCentralStagingRepository"
+  }
+
+  doLast {
+    def missingFiles = []
+    fileTree(centralRepositoryDir).matching {
+      include '**/*.jar', '**/*.pom', '**/*.module'
+    }.files.each { artifact ->
+      ['.asc', '.md5', '.sha1'].each { suffix ->
+        if (!new File(artifact.path + suffix).isFile()) {
+          missingFiles << artifact.path + suffix
+        }
+      }
+    }
+    if (missingFiles) {
+      throw new GradleException("Central staging is incomplete:\n${missingFiles.join('\n')}")
+    }
+  }
+}
+
+tasks.register('centralBundle', Zip) {
+  dependsOn tasks.named('verifyCentralStaging')
+  archiveFileName = "central-bundle-${version}.zip"
+  destinationDirectory = layout.buildDirectory.dir('central-bundle')
+  from centralRepositoryDir
+  exclude '**/maven-metadata.xml*'
 }
